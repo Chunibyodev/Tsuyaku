@@ -1,22 +1,58 @@
 name: Release
 
-# Publishes a release with the program (zip) and the Firefox add-on (.xpi): push a tag like v1.0.0,
-# or run this workflow by hand (Actions → Release → Run workflow) to release the version in the code.
+# Releases the version in the code (pyproject.toml, manifest.json, __init__.py, CHANGELOG.md) when
+# it hasn't been released yet: on every push to main, on a pushed v* tag, or when run by hand
+# (Actions → Release → Run workflow). The release has the program (zip) and the Firefox add-on (.xpi).
 # The add-on is signed by Mozilla when the repository has the secrets JWT_ISSUER and JWT_SECRET
 # (free API keys from https://addons.mozilla.org/developers/addon/api/key/);
 # without them the release gets an unsigned .xpi, which release Firefox won't install.
 on:
   push:
+    branches: [main]
     tags: ["v*"]
   workflow_dispatch:
 
 permissions:
   contents: write
 
+concurrency:
+  group: release  # one at a time, so a version is never released twice
+  cancel-in-progress: false
+
 jobs:
+  check:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      new: ${{ steps.version.outputs.new }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check the version everywhere, and whether it's released
+        id: version
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          v="$(python3 -c "import tomllib; print(tomllib.load(open('pyproject.toml', 'rb'))['project']['version'])")"
+          if [ "$GITHUB_REF_TYPE" = tag ] && [ "$GITHUB_REF_NAME" != "v$v" ]; then
+            echo "Tag $GITHUB_REF_NAME doesn't match the version in the code ($v)"; exit 1
+          fi
+          grep -q "\"version\": \"$v\"" src/tsuyaku/extension/manifest.json || { echo "manifest.json is not $v"; exit 1; }
+          grep -q "__version__ = \"$v\"" src/tsuyaku/__init__.py || { echo "__init__.py is not $v"; exit 1; }
+          echo "version=$v" >> "$GITHUB_OUTPUT"
+          if gh release view "v$v" > /dev/null 2>&1; then
+            echo "v$v is already released."
+            echo "new=false" >> "$GITHUB_OUTPUT"
+          else
+            grep -q "^## $v" CHANGELOG.md || { echo "CHANGELOG.md has no $v section"; exit 1; }
+            echo "new=true" >> "$GITHUB_OUTPUT"
+          fi
+
   release:
+    needs: check
+    if: needs.check.outputs.new == 'true'
     runs-on: ubuntu-latest
     env:
+      VERSION: ${{ needs.check.outputs.version }}
       AMO_JWT_ISSUER: ${{ secrets.JWT_ISSUER }}
       AMO_JWT_SECRET: ${{ secrets.JWT_SECRET }}
     steps:
@@ -25,52 +61,36 @@ jobs:
         with:
           node-version: "22"
 
-      - name: Check the version everywhere
-        id: version
-        run: |
-          if [ "$GITHUB_REF_TYPE" = tag ]; then
-            v="${GITHUB_REF_NAME#v}"
-          else
-            v="$(python3 -c "import tomllib; print(tomllib.load(open('pyproject.toml', 'rb'))['project']['version'])")"
-          fi
-          grep -q "\"version\": \"$v\"" src/tsuyaku/extension/manifest.json || { echo "manifest.json is not $v"; exit 1; }
-          grep -q "^version = \"$v\"" pyproject.toml || { echo "pyproject.toml is not $v"; exit 1; }
-          grep -q "__version__ = \"$v\"" src/tsuyaku/__init__.py || { echo "__init__.py is not $v"; exit 1; }
-          grep -q "^## $v" CHANGELOG.md || { echo "CHANGELOG.md has no $v section"; exit 1; }
-          echo "version=$v" >> "$GITHUB_OUTPUT"
-
       - name: Lint the add-on
         run: npx --yes web-ext@10 lint --source-dir src/tsuyaku/extension
 
       - name: Package the program
         run: |
           mkdir dist
-          git archive --format=zip --prefix=tsuyaku/ -o "dist/tsuyaku-${{ steps.version.outputs.version }}.zip" HEAD
+          git archive --format=zip --prefix=tsuyaku/ -o "dist/tsuyaku-$VERSION.zip" HEAD
 
       - name: Sign the add-on (unlisted, for download from the release)
         if: env.AMO_JWT_ISSUER != ''
         run: |
           npx --yes web-ext@10 sign --channel unlisted --source-dir src/tsuyaku/extension \
             --artifacts-dir signed --api-key "$AMO_JWT_ISSUER" --api-secret "$AMO_JWT_SECRET"
-          mv signed/*.xpi "dist/tsuyaku-firefox-${{ steps.version.outputs.version }}.xpi"
+          mv signed/*.xpi "dist/tsuyaku-firefox-$VERSION.xpi"
 
       - name: Package the add-on unsigned (no AMO keys)
         if: env.AMO_JWT_ISSUER == ''
         run: |
           npx --yes web-ext@10 build --source-dir src/tsuyaku/extension --artifacts-dir unsigned
-          mv unsigned/*.zip "dist/tsuyaku-firefox-${{ steps.version.outputs.version }}-unsigned.xpi"
+          mv unsigned/*.zip "dist/tsuyaku-firefox-$VERSION-unsigned.xpi"
 
-      - name: Publish the release
+      - name: Publish the release (and its tag)
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          v="${{ steps.version.outputs.version }}"
-          awk -v v="$v" '$0 ~ "^## "v {on=1; next} /^## / {on=0} on' CHANGELOG.md > notes.md
+          awk -v v="$VERSION" '$0 ~ "^## "v {on=1; next} /^## / {on=0} on' CHANGELOG.md > notes.md
           cat >> notes.md <<'NOTES'
 
           **Install:** download `tsuyaku-<version>.zip`, unzip it and run `install.bat`, then open
           `tsuyaku-firefox-<version>.xpi` in Firefox. Details in the
           [README](https://github.com/Chunibyodev/tsuyaku#install).
           NOTES
-          # Run by hand, this also creates the tag on the commit it ran on.
-          gh release create "v$v" dist/* --target "$GITHUB_SHA" --title "Tsuyaku $v" --notes-file notes.md
+          gh release create "v$VERSION" dist/* --target "$GITHUB_SHA" --title "Tsuyaku $VERSION" --notes-file notes.md

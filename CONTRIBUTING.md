@@ -50,3 +50,10 @@ off and on again.
 * Match the surrounding code style (ruff's settings are in `pyproject.toml`).
 * By contributing you agree that your contribution is licensed under the
   [Apache License 2.0](LICENSE), like the rest of the project.
+
+## Releasing
+
+Set the new version in `pyproject.toml`, `src/tsuyaku/__init__.py` and
+`src/tsuyaku/extension/manifest.json`, add a section for it to `CHANGELOG.md`, and push to `main`.
+The Release workflow sees a version that has no release yet, tags it, signs the Firefox add-on
+with Mozilla (repository secrets `JWT_ISSUER` / `JWT_SECRET`) and publishes the release.
