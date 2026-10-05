@@ -1,0 +1,23 @@
+<!doctype html><html><head><meta charset="utf-8"><style>
+body{margin:0;font:13px Roboto,sans-serif;background:#0f0f0f;color:#fff;--yt-live-chat-background-color:#0f0f0f;--yt-live-chat-primary-text-color:#fff;--yt-live-chat-secondary-text-color:#aaa}
+yt-live-chat-header-renderer{display:flex;height:40px;align-items:center;padding:0 12px;border-bottom:1px solid #333}
+#primary-content{flex:1} #items{padding:8px 12px} yt-live-chat-text-message-renderer{display:block;padding:4px 0}
+#author-name{color:#aaa;margin-right:8px} #input-panel{position:fixed;bottom:0;left:0;right:0;padding:12px;border-top:1px solid #333}
+#input{border-bottom:1px solid #666;min-height:20px;outline:none}
+</style></head><body>
+<yt-live-chat-header-renderer><div id="primary-content">Top chat</div><div id="action-buttons"><span>Top fans</span></div><span id="live-chat-header-context-menu">⋮</span></yt-live-chat-header-renderer>
+<yt-live-chat-item-list-renderer><div id="items">
+<yt-live-chat-text-message-renderer id="a1"><div id="content"><span id="author-name">@taro</span><span id="message" class="style-scope yt-live-chat-text-message-renderer">こんばんは<img class="emoji" alt=":_kani:" src="data:,">かわいい</span></div></yt-live-chat-text-message-renderer>
+<yt-live-chat-text-message-renderer id="a2"><div id="content"><span id="author-name">@bob</span><span id="message" class="style-scope yt-live-chat-text-message-renderer">hello from the US</span></div></yt-live-chat-text-message-renderer>
+</div></yt-live-chat-item-list-renderer>
+<div id="input-panel"><yt-live-chat-message-input-renderer><div id="input" contenteditable="" class="style-scope yt-live-chat-text-input-field-renderer"></div></yt-live-chat-message-input-renderer></div>
+<script>
+const input = document.getElementById('input');
+input.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') { e.preventDefault(); window.__sent = input.textContent;
+    const r = document.createElement('yt-live-chat-text-message-renderer');
+    r.innerHTML = '<div id="content"><span id="author-name">@me</span><span id="message" class="style-scope yt-live-chat-text-message-renderer"></span></div>';
+    r.querySelector('#message').textContent = input.textContent;
+    document.getElementById('items').appendChild(r); input.textContent = ''; }
+});
+</script></body></html>

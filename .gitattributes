@@ -1,0 +1,8 @@
+# Windows scripts keep Windows line endings, also in zip downloads.
+*.bat text eol=crlf
+*.ps1 text eol=crlf
+
+# Not needed to run Tsuyaku: left out of release zips.
+/tests export-ignore
+/.github export-ignore
+/.gitattributes export-ignore

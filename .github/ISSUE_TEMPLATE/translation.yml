@@ -1,0 +1,23 @@
+name: Bad translation
+description: A subtitle, chat message or message-box translation that came out wrong.
+labels: [translation]
+body:
+  - type: textarea
+    id: examples
+    attributes:
+      label: Examples
+      description: The Japanese (click a subtitle or chat message to see it), what Tsuyaku made of it, and what it should say.
+    validations:
+      required: true
+  - type: input
+    id: model
+    attributes:
+      label: Translation model
+      description: From the settings page (or the popup's Translator line).
+    validations:
+      required: true
+  - type: input
+    id: stream
+    attributes:
+      label: Stream or video (optional)
+      description: A link helps to reproduce it, with the time if it's an archive.

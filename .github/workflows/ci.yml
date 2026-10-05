@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.12"
+      - name: Install
+        run: uv sync
+      - name: Lint
+        run: uv run ruff check src tests scripts
+      - name: Unit tests
+        run: uv run pytest -q
+      - name: CLI smoke test
+        run: uv run tsuyaku doctor
+
+  firefox-extension:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Lint the Firefox extension (Mozilla's add-on linter)
+        run: npx --yes web-ext@10 lint --source-dir src/tsuyaku/extension
+      - name: Extension scripts in a simulated YouTube chat (jsdom)
+        working-directory: tests/js
+        run: npm ci && npm test

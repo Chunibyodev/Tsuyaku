@@ -1,0 +1,8 @@
+Tsuyaku
+Copyright 2026 Chunibyodev (contact@chunibyo.dev)
+
+This product is licensed under the Apache License, Version 2.0 (see LICENSE).
+
+Tsuyaku downloads and runs third-party models and programs (speech recognition and
+translation models, llama.cpp, yt-dlp, Deno). They are not part of this repository and keep
+their own licenses; see "Licenses and credits" in README.md.

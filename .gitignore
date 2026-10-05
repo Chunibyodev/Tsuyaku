@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+.pytest_cache/
+.ruff_cache/
+build/
+dist/
+
+# Local data / secrets (never commit cookies or API keys)
+cookies.txt
+*.cookies.txt
+.env
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Extension tests / signing
+node_modules/
+web-ext-artifacts/

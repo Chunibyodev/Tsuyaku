@@ -1,0 +1,50 @@
+{
+  "manifest_version": 2,
+  "name": "Tsuyaku for YouTube",
+  "version": "1.0.0",
+  "description": "Live English subtitles and translated chat for Japanese YouTube streams, made on your own PC by Tsuyaku's local models.",
+  "author": "Chunibyodev",
+  "homepage_url": "https://github.com/Chunibyodev/tsuyaku",
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "tsuyaku@chunibyo.dev",
+      "strict_min_version": "140.0",
+      "data_collection_permissions": {
+        "required": ["none"]
+      }
+    }
+  },
+  "permissions": ["nativeMessaging", "storage"],
+  "background": {
+    "scripts": ["common.js", "background.js"],
+    "persistent": true
+  },
+  "browser_action": {
+    "default_title": "Tsuyaku",
+    "default_icon": "icons/icon.svg",
+    "default_popup": "popup/popup.html"
+  },
+  "options_ui": {
+    "page": "options/options.html",
+    "open_in_tab": true
+  },
+  "icons": {
+    "48": "icons/icon.svg",
+    "96": "icons/icon.svg"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://www.youtube.com/*"],
+      "exclude_matches": ["https://www.youtube.com/live_chat*"],
+      "js": ["common.js", "content/watch.js"],
+      "css": ["content/watch.css"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": ["https://www.youtube.com/live_chat*"],
+      "js": ["common.js", "content/chat-bridge.js", "content/chat.js"],
+      "all_frames": true,
+      "run_at": "document_idle"
+    }
+  ]
+}

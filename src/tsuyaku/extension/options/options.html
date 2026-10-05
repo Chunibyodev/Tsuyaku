@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tsuyaku settings</title>
+  <link rel="stylesheet" href="options.css">
+</head>
+<body>
+  <main>
+    <header>
+      <img src="../icons/icon.svg" alt="" width="32" height="32">
+      <h1>Tsuyaku settings</h1>
+    </header>
+
+    <div id="off" class="banner" hidden>
+      <span id="off-text">Tsuyaku is off. Turn it on to see and change its settings.</span>
+      <button id="power" class="primary">Turn on</button>
+    </div>
+
+    <form id="form" hidden>
+      <section>
+        <h2>Speech recognition</h2>
+        <div class="field">
+          <span class="label">Engine</span>
+          <label class="radio"><input type="radio" name="asr.engine" value="whisper"> Whisper (best accuracy, GPU)</label>
+          <label class="radio"><input type="radio" name="asr.engine" value="reazon"> ReazonSpeech (very fast, CPU-friendly)</label>
+        </div>
+        <label class="field" data-show="whisper">
+          <span class="label">Whisper model</span>
+          <select id="whisper-preset"></select>
+          <input id="whisper-custom" type="text" placeholder="Hugging Face id, folder, or a size like small" hidden>
+        </label>
+        <div class="row" data-show="whisper">
+          <label class="field"><span class="label">Device</span>
+            <select name="asr.device"><option value="auto">auto</option><option value="cuda">GPU (CUDA)</option><option value="cpu">CPU</option></select></label>
+          <label class="field"><span class="label">Compute type</span>
+            <select name="asr.compute_type">
+              <option>auto</option><option>int8_float32</option><option>float32</option><option>int8_float16</option><option>float16</option><option>int8</option>
+            </select></label>
+          <label class="field"><span class="label">Whisper window</span>
+            <span class="unit"><input name="asr.window_s" type="number" min="4" max="30" step="1"> s</span></label>
+        </div>
+        <div class="row">
+          <label class="field"><span class="label">Max phrase length</span>
+            <span class="unit"><input name="vad.max_segment_s" type="number" min="1.5" max="8" step="0.5"> s</span></label>
+          <label class="field"><span class="label">Pause that ends a phrase</span>
+            <span class="unit"><input name="vad.min_silence_ms" type="number" min="120" max="1200" step="20"> ms</span></label>
+          <label class="field"><span class="label">Voice detection threshold</span>
+            <input name="vad.threshold" type="number" min="0.2" max="0.9" step="0.05"></label>
+        </div>
+        <p class="hint">Shorter phrases and pauses give faster but choppier subtitles. The Whisper window (6 s) makes
+          Whisper several times faster on short phrases; 30 is stock Whisper. A new model is downloaded from the
+          Tsuyaku button.</p>
+      </section>
+
+      <section>
+        <h2>Translation model</h2>
+        <label class="check"><input name="llm.manage_server" type="checkbox"> Run the translation model on this PC with llama-server (recommended)</label>
+        <div data-show="managed">
+          <label class="field"><span class="label">Model</span><select id="llm-preset"></select></label>
+          <p id="llm-about" class="hint"></p>
+          <div id="llm-custom" class="row" hidden>
+            <label class="field"><span class="label">Hugging Face repo</span><input name="llm.model_repo" type="text"></label>
+            <label class="field"><span class="label">GGUF file</span><input name="llm.model_file" type="text"></label>
+            <label class="field"><span class="label">Or a .gguf file on disk</span><input name="llm.model_path" type="text" placeholder="optional"></label>
+          </div>
+          <label class="field narrow"><span class="label">GPU layers (99 = all that fit)</span><input name="llm.gpu_layers" type="number" min="0" max="999"></label>
+        </div>
+        <div class="row" data-show="external">
+          <label class="field"><span class="label">Server URL (OpenAI-compatible)</span><input name="llm.base_url" type="text"></label>
+          <label class="field"><span class="label">API key</span><input name="llm.api_key" type="password" autocomplete="off"></label>
+          <label class="field"><span class="label">Model name</span><input name="llm.model_name" type="text"></label>
+        </div>
+        <div class="row">
+          <label class="field"><span class="label">Previous lines as context</span><input name="subtitles.context_lines" type="number" min="0" max="20"></label>
+          <label class="field"><span class="label">Temperature</span><input name="llm.temperature" type="number" min="0" max="1.5" step="0.05"></label>
+        </div>
+        <p class="hint">The translator writes the subtitles and the chat translations, and the message box's
+          Japanese unless a cloud model is chosen below. Ollama or LM Studio work as an external server.</p>
+      </section>
+
+      <section>
+        <h2>Message box</h2>
+        <p class="hint">Type English in YouTube's chat box: Japanese versions, each translated back into English,
+          appear about a second after you stop typing.</p>
+        <label class="field"><span class="label">Model for your messages</span><select name="compose.provider" id="provider"></select></label>
+        <div data-show="cloud">
+          <div class="row">
+            <label class="field grow"><span class="label">API key</span><input id="cloud-key" type="password" autocomplete="off" placeholder="paste your API key"></label>
+            <a id="key-link" class="side-link" target="_blank" rel="noopener">Get a free key</a>
+          </div>
+          <div class="row">
+            <label class="field grow"><span class="label">Cloud model</span><select id="cloud-model"></select></label>
+            <button type="button" id="load-models">Load list</button>
+          </div>
+          <p class="hint" id="provider-note"></p>
+        </div>
+        <div class="row">
+          <button type="button" id="test">Test</button>
+          <span id="test-result" class="result"></span>
+        </div>
+        <div class="row">
+          <label class="field"><span class="label">Versions to suggest</span><input name="compose.versions" type="number" min="1" max="3"></label>
+          <label class="field"><span class="label">Default tone</span>
+            <select name="compose.tone"><option value="casual">Casual</option><option value="polite">Polite (です/ます)</option><option value="fan">Excited fan</option></select></label>
+          <label class="field"><span class="label">Translate after you stop typing for</span>
+            <span class="unit"><input name="compose.debounce_ms" type="number" min="200" max="3000" step="100"> ms</span></label>
+        </div>
+        <p class="hint">If the cloud model fails or reaches its free limit, the local model takes over. Keys are
+          stored in Tsuyaku's config file on this PC.</p>
+      </section>
+
+      <div class="savebar">
+        <button type="submit" class="primary" id="save">Save</button>
+        <span id="save-result" class="result"></span>
+      </div>
+    </form>
+
+    <section id="glossary" hidden>
+      <h2>Glossary</h2>
+      <p class="hint">Names and terms for the translator, for every stream or one channel (e.g. ぺこら → Pekora).
+        Channels appear here after you've watched them.</p>
+      <label class="field"><span class="label">Glossary for</span><select id="scope"></select></label>
+      <table>
+        <thead><tr><th>Japanese</th><th>English</th><th>Note</th><th></th></tr></thead>
+        <tbody id="entries"></tbody>
+      </table>
+      <div class="row">
+        <button type="button" id="add-entry">Add</button>
+        <button type="button" id="save-glossary" class="primary">Save glossary</button>
+        <span id="glossary-result" class="result"></span>
+      </div>
+    </section>
+  </main>
+  <script src="../common.js"></script>
+  <script src="options.js"></script>
+</body>
+</html>

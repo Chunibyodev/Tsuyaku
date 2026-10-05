@@ -1,0 +1,12 @@
+{
+  "name": "tsuyaku-extension-tests",
+  "private": true,
+  "type": "module",
+  "description": "Runs the Firefox extension's YouTube chat scripts in jsdom against a mock of YouTube's live chat.",
+  "scripts": {
+    "test": "node --test"
+  },
+  "devDependencies": {
+    "jsdom": "^26.1.0"
+  }
+}

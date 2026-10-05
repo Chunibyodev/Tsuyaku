@@ -1,0 +1,34 @@
+name: Bug report
+description: Something doesn't work as it should.
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What did you do, what did you expect, and what happened instead?
+    validations:
+      required: true
+  - type: textarea
+    id: popup
+    attributes:
+      label: What the popup shows
+      description: The Speech and Translator lines, and the "This tab" part (a screenshot is fine).
+  - type: textarea
+    id: doctor
+    attributes:
+      label: Output of `uv run tsuyaku doctor`
+      description: Run it in the Tsuyaku folder.
+      render: text
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: The last lines of tsuyaku.log and llama-server.log (doctor prints where they are).
+      render: text
+  - type: input
+    id: versions
+    attributes:
+      label: Versions
+      description: Tsuyaku version, Firefox version, Windows/Linux, GPU.
+      placeholder: Tsuyaku 1.0.0, Firefox 157, Windows 11, GTX 1080 Ti

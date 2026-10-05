@@ -1,0 +1,69 @@
+name: Release
+
+# Push a tag like v1.0.0 to publish a release with the program (zip) and the Firefox add-on (.xpi).
+# The add-on is signed by Mozilla when the repository has the secrets AMO_JWT_ISSUER and
+# AMO_JWT_SECRET (free API keys from https://addons.mozilla.org/developers/addon/api/key/);
+# without them the release gets an unsigned .xpi, which release Firefox won't install.
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    env:
+      AMO_JWT_ISSUER: ${{ secrets.AMO_JWT_ISSUER }}
+      AMO_JWT_SECRET: ${{ secrets.AMO_JWT_SECRET }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Check that the versions match the tag
+        id: version
+        run: |
+          v="${GITHUB_REF_NAME#v}"
+          grep -q "\"version\": \"$v\"" src/tsuyaku/extension/manifest.json || { echo "manifest.json is not $v"; exit 1; }
+          grep -q "^version = \"$v\"" pyproject.toml || { echo "pyproject.toml is not $v"; exit 1; }
+          grep -q "__version__ = \"$v\"" src/tsuyaku/__init__.py || { echo "__init__.py is not $v"; exit 1; }
+          grep -q "^## $v" CHANGELOG.md || { echo "CHANGELOG.md has no $v section"; exit 1; }
+          echo "version=$v" >> "$GITHUB_OUTPUT"
+
+      - name: Lint the add-on
+        run: npx --yes web-ext@10 lint --source-dir src/tsuyaku/extension
+
+      - name: Package the program
+        run: |
+          mkdir dist
+          git archive --format=zip --prefix=tsuyaku/ -o "dist/tsuyaku-${{ steps.version.outputs.version }}.zip" HEAD
+
+      - name: Sign the add-on (unlisted, for download from the release)
+        if: env.AMO_JWT_ISSUER != ''
+        run: |
+          npx --yes web-ext@10 sign --channel unlisted --source-dir src/tsuyaku/extension \
+            --artifacts-dir signed --api-key "$AMO_JWT_ISSUER" --api-secret "$AMO_JWT_SECRET"
+          mv signed/*.xpi "dist/tsuyaku-firefox-${{ steps.version.outputs.version }}.xpi"
+
+      - name: Package the add-on unsigned (no AMO keys)
+        if: env.AMO_JWT_ISSUER == ''
+        run: |
+          npx --yes web-ext@10 build --source-dir src/tsuyaku/extension --artifacts-dir unsigned
+          mv unsigned/*.zip "dist/tsuyaku-firefox-${{ steps.version.outputs.version }}-unsigned.xpi"
+
+      - name: Publish the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          v="${{ steps.version.outputs.version }}"
+          awk -v v="$v" '$0 ~ "^## "v {on=1; next} /^## / {on=0} on' CHANGELOG.md > notes.md
+          cat >> notes.md <<'NOTES'
+
+          **Install:** download `tsuyaku-<version>.zip`, unzip it and run `install.bat`, then open
+          `tsuyaku-firefox-<version>.xpi` in Firefox. Details in the
+          [README](https://github.com/Chunibyodev/tsuyaku#install).
+          NOTES
+          gh release create "$GITHUB_REF_NAME" dist/* --title "Tsuyaku $v" --notes-file notes.md

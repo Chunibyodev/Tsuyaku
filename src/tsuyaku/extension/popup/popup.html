@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Tsuyaku</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <header>
+    <img src="../icons/icon.svg" alt="" width="28" height="28">
+    <div class="title">
+      <h1>Tsuyaku</h1>
+      <div id="summary" class="muted">Off</div>
+    </div>
+    <button id="power" class="power" aria-pressed="false" title="Start or stop the models on this PC">Turn on</button>
+  </header>
+
+  <section id="models" hidden>
+    <div class="row"><span class="dot" id="asr-dot"></span><span class="label">Speech</span><span id="asr-text" class="value"></span></div>
+    <div class="row"><span class="dot" id="llm-dot"></span><span class="label">Translator</span><span id="llm-text" class="value"></span></div>
+    <div id="missing" hidden>
+      <p>Not downloaded yet: <span id="missing-list"></span>.</p>
+      <button id="download" class="primary">Download (about 4–5 GB)</button>
+    </div>
+    <div id="progress" hidden>
+      <div class="bar"><div id="progress-fill"></div></div>
+      <div id="progress-text" class="muted small"></div>
+    </div>
+  </section>
+
+  <section id="tab" hidden>
+    <div class="section-title">This tab</div>
+    <div class="row"><span class="label">Subtitles</span><span id="tab-subs" class="value"></span></div>
+    <div class="row"><span class="label">Chat</span><span id="tab-chat" class="value"></span></div>
+  </section>
+
+  <div id="error" class="error" hidden></div>
+
+  <section class="settings">
+    <label class="check"><input type="checkbox" data-pref="subtitles"> English subtitles on the video</label>
+    <label class="check"><input type="checkbox" data-pref="showJp"> Japanese line above each subtitle</label>
+    <label class="slider">Subtitle size <input type="range" min="60" max="200" step="10" data-pref="subSize"> <span id="size-value"></span></label>
+    <label class="check"><input type="checkbox" data-pref="chatTranslate"> Translate the chat</label>
+    <label class="check"><input type="checkbox" data-pref="messageBox"> Message box: English → Japanese</label>
+    <div class="tones" role="radiogroup" aria-label="Message tone">
+      <span class="muted small">Tone</span>
+      <button data-tone="casual">Casual</button>
+      <button data-tone="polite">Polite</button>
+      <button data-tone="fan">Fan</button>
+    </div>
+    <label class="check"><input type="checkbox" data-pref="autoStart"> Turn on when Firefox starts</label>
+  </section>
+
+  <div class="links"><button id="settings">Settings…</button></div>
+
+  <footer class="muted small">
+    Speech recognition and translation run on this PC. Turning Tsuyaku off frees the GPU memory.
+    Click a subtitle or chat message to see the Japanese.
+  </footer>
+  <script src="../common.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>

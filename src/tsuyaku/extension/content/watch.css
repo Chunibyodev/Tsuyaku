@@ -1,0 +1,88 @@
+/* Tsuyaku's subtitles inside YouTube's player (they follow it into fullscreen). */
+.tsy-subs {
+  position: absolute;
+  left: 4%;
+  right: 4%;
+  bottom: 8%;
+  z-index: 41; /* above YouTube's own captions, below its controls */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2em;
+  pointer-events: none;
+  text-align: center;
+  line-height: 1.25;
+  font-family: "Segoe UI", Roboto, "Yu Gothic UI", Meiryo, "Noto Sans CJK JP", Arial, sans-serif;
+  transition: bottom 0.15s ease;
+}
+/* Make room while YouTube's control bar is showing. */
+.html5-video-player:not(.ytp-autohide) .tsy-subs {
+  bottom: calc(8% + 50px);
+}
+.tsy-cue {
+  pointer-events: auto;
+  cursor: pointer;
+  max-width: 100%;
+}
+.tsy-en,
+.tsy-jp {
+  color: #fff;
+  font-weight: 600;
+  -webkit-text-stroke: 0.16em #000;
+  paint-order: stroke fill;
+  text-shadow: 0 0 0.12em rgba(0, 0, 0, 0.8);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.tsy-jp {
+  color: #ffe9a8;
+  font-size: 0.72em;
+}
+.tsy-untranslated {
+  color: #ffe9a8;
+}
+.tsy-note {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 62;
+  max-width: 60%;
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.72);
+  color: #fff;
+  font: 13px/1.35 Roboto, "Segoe UI", Arial, sans-serif;
+  pointer-events: none;
+}
+.tsy-note[hidden] {
+  display: none;
+}
+/* The EN button next to YouTube's CC button. */
+.tsy-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: top;
+}
+.tsy-button[hidden] {
+  display: none !important;
+}
+.tsy-button-label {
+  position: relative;
+  padding: 1px 4px;
+  border: 2px solid #fff;
+  border-radius: 3px;
+  font: 700 11px/1.1 Roboto, Arial, sans-serif;
+  color: #fff;
+  opacity: 0.9;
+}
+.tsy-button[aria-pressed="true"] .tsy-button-label::after {
+  content: "";
+  position: absolute;
+  left: -2px;
+  right: -2px;
+  bottom: -7px;
+  height: 3px;
+  border-radius: 2px;
+  background: #3ea6ff;
+}

@@ -1,0 +1,11 @@
+name: Idea or feature request
+description: Something Tsuyaku could do better.
+labels: [enhancement]
+body:
+  - type: textarea
+    id: idea
+    attributes:
+      label: What would you like?
+      description: What are you trying to do, and what's missing or getting in the way?
+    validations:
+      required: true
