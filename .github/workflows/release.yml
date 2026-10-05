@@ -1,8 +1,8 @@
 name: Release
 
 # Push a tag like v1.0.0 to publish a release with the program (zip) and the Firefox add-on (.xpi).
-# The add-on is signed by Mozilla when the repository has the secrets AMO_JWT_ISSUER and
-# AMO_JWT_SECRET (free API keys from https://addons.mozilla.org/developers/addon/api/key/);
+# The add-on is signed by Mozilla when the repository has the secrets JWT_ISSUER and JWT_SECRET
+# (free API keys from https://addons.mozilla.org/developers/addon/api/key/);
 # without them the release gets an unsigned .xpi, which release Firefox won't install.
 on:
   push:
@@ -15,8 +15,8 @@ jobs:
   release:
     runs-on: ubuntu-latest
     env:
-      AMO_JWT_ISSUER: ${{ secrets.AMO_JWT_ISSUER }}
-      AMO_JWT_SECRET: ${{ secrets.AMO_JWT_SECRET }}
+      AMO_JWT_ISSUER: ${{ secrets.JWT_ISSUER }}
+      AMO_JWT_SECRET: ${{ secrets.JWT_SECRET }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
