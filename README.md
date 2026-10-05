@@ -4,7 +4,7 @@
 
 [![CI](https://github.com/Chunibyodev/tsuyaku/actions/workflows/ci.yml/badge.svg)](https://github.com/Chunibyodev/tsuyaku/actions/workflows/ci.yml)
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
-![Firefox 140+](https://img.shields.io/badge/Firefox-140%2B-orange.svg)
+![Firefox 142+](https://img.shields.io/badge/Firefox-142%2B-orange.svg)
 ![Windows | Linux](https://img.shields.io/badge/platform-Windows%20%7C%20Linux-lightgrey.svg)
 
 Watch Japanese streams and videos on the normal youtube.com with **English subtitles on YouTube's
@@ -40,7 +40,7 @@ no subscription, nothing sent to a server.
 ## Requirements
 
 * **Windows 10 or 11** (Linux works too, see [below](#linux)).
-* **Firefox 140 or newer.** Tsuyaku is a Firefox add-on; Chrome isn't supported.
+* **Firefox 142 or newer.** Tsuyaku is a Firefox add-on; Chrome isn't supported.
 * **An NVIDIA GPU with 6 GB or more** is recommended (GTX 10-series or newer). It runs on the CPU
   without one, but too slowly for live subtitles.
 * About **8 GB of free disk space** and an internet connection for the first download (~4–5 GB of
@@ -52,9 +52,10 @@ Tsuyaku has two parts: a **program** that runs the models on your PC, and a **Fi
 that puts the subtitles and translations on YouTube and starts the program.
 
 1. **Get the program.** Download `tsuyaku-<version>.zip` from the
-   [latest release](https://github.com/Chunibyodev/tsuyaku/releases/latest) and unzip it somewhere
-   permanent (for example `C:\Tsuyaku`). Or, with [Git](https://git-scm.com/download/win):
-   `git clone https://github.com/Chunibyodev/tsuyaku.git`
+   [latest release](https://github.com/Chunibyodev/tsuyaku/releases/latest) and unzip it to a
+   folder where it can stay, for example `C:\Tsuyaku`, rather than your Downloads folder: Firefox
+   runs Tsuyaku from this folder. Or, with [Git](https://git-scm.com/download/win):
+   `git clone https://github.com/Chunibyodev/tsuyaku.git C:\Tsuyaku`
 2. **Run `install.bat`** in that folder. It sets up its own Python with
    [uv](https://docs.astral.sh/uv/) (nothing system-wide), downloads the models and connects
    Firefox to Tsuyaku. The first run takes a while.
@@ -63,8 +64,16 @@ that puts the subtitles and translations on YouTube and starts the program.
 4. **Pin the button** (puzzle-piece menu → Tsuyaku → *Pin to Toolbar*), click it → **Turn on**,
    and open a Japanese stream.
 
-To update, run **`update.bat`** (with Git) or unzip a newer release over the old folder and run
-`install.bat` again. Add-on updates come as a new `.xpi` in the release.
+Afterwards you can delete the downloaded `.zip` and `.xpi` (Firefox keeps its own copy of the
+add-on). **Keep the Tsuyaku folder**: it holds the program and its Python environment. The models
+and your settings live in `%LOCALAPPDATA%\Tsuyaku`.
+
+**To update**, run **`update.bat`** (with Git), or unzip a newer release over the old folder and
+run `install.bat` again, then install the new `.xpi` from the release.
+
+**To move the Tsuyaku folder**, turn Tsuyaku off, move the folder and run `install.bat` in its new
+place. It notices the move, rebuilds the folder's Python environment and points Firefox at the new
+place; nothing is downloaded again.
 
 ## Using it
 
@@ -123,6 +132,8 @@ local one takes over.
 * **The popup says Tsuyaku's program isn't set up**: run `install.bat` in the Tsuyaku folder (or
   `uv run tsuyaku firefox` if it's installed). `uv run tsuyaku doctor` then shows
   `Firefox extension: connected`.
+* **The popup says Firefox couldn't start Tsuyaku's program**: the Tsuyaku folder was moved or
+  deleted. Run `install.bat` in the folder where it is now (or get it again).
 * **Speech runs on the CPU** (the popup's Speech line says "on cpu"): update the NVIDIA driver
   (it must support CUDA 12) and run `install.bat` again.
 * **Chat stays in Japanese**: look at the popup's *This tab → Chat* line. "Waiting for the

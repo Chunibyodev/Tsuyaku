@@ -11,6 +11,32 @@ Set-Location $Root
 Write-Host ""
 Write-Host "=== Tsuyaku setup ===" -ForegroundColor Cyan
 
+# Firefox runs Tsuyaku from this folder, so it has to stay where it is installed.
+if ($Root -like "$env:TEMP*") {
+    Write-Host "Tsuyaku is running from inside the zip file. Unzip it first (right-click > Extract All...)," -ForegroundColor Red
+    Write-Host "to a folder where it can stay, such as C:\Tsuyaku, and run install.bat from there." -ForegroundColor Red
+    exit 1
+}
+$downloads = ""
+try { $downloads = (New-Object -ComObject Shell.Application).NameSpace("shell:Downloads").Self.Path } catch {}
+if (-not $Update -and $downloads -and $Root -like "$downloads*") {
+    Write-Host "Tsuyaku is in your Downloads folder. Firefox will run it from here, so it must stay here." -ForegroundColor Yellow
+    Write-Host "Better: close this window, move the folder somewhere permanent (such as C:\Tsuyaku) and run" -ForegroundColor Yellow
+    Write-Host "install.bat there." -ForegroundColor Yellow
+    Read-Host "Or press Enter to install it here anyway"
+}
+
+# A moved folder: its Python environment still points at the old place. Build it again.
+$tool = Join-Path $Root ".venv\Scripts\tsuyaku.exe"
+if (Test-Path $tool) {
+    $works = $false
+    try { & $tool --version *> $null; $works = ($LASTEXITCODE -eq 0) } catch {}
+    if (-not $works) {
+        Write-Host "The Tsuyaku folder was moved: rebuilding its Python environment..."
+        Remove-Item (Join-Path $Root ".venv") -Recurse -Force
+    }
+}
+
 # 1. uv (manages Python and packages; installs into your user profile)
 if (-not (Get-Command uv -ErrorAction SilentlyContinue)) {
     Write-Host "Installing uv..."

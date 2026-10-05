@@ -13,8 +13,8 @@ jobs:
         os: [ubuntu-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v5
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v7
         with:
           python-version: "3.12"
       - name: Install
@@ -25,12 +25,19 @@ jobs:
         run: uv run pytest -q
       - name: CLI smoke test
         run: uv run tsuyaku doctor
+      - name: The Windows installer script parses
+        if: runner.os == 'Windows'
+        shell: powershell
+        run: |
+          $tokens = $null; $errors = $null
+          [System.Management.Automation.Language.Parser]::ParseFile("$PWD\scripts\install.ps1", [ref]$tokens, [ref]$errors) | Out-Null
+          if ($errors) { $errors | ForEach-Object { $_.ToString() }; exit 1 }
 
   firefox-extension:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: "22"
       - name: Lint the Firefox extension (Mozilla's add-on linter)

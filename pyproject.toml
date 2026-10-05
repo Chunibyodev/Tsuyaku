@@ -1,6 +1,6 @@
 [project]
 name = "tsuyaku"
-version = "1.0.0"
+version = "1.0.1"
 description = "Live Japanese→English for YouTube in Firefox: subtitles on the player, translated chat and an English→Japanese message box, all running on your own PC."
 readme = "README.md"
 license = "Apache-2.0"

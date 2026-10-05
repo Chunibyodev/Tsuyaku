@@ -109,17 +109,14 @@ function render() {
   err.replaceChildren();
   if (s.notInstalled) {
     // The add-on is installed, the program it starts isn't (or isn't connected to Firefox).
-    err.append('Tsuyaku’s program isn’t set up on this PC yet. Get it from ');
-    const link = document.createElement('a');
-    link.href = `${browser.runtime.getManifest().homepage_url}#install`;
-    link.target = '_blank';
-    link.textContent = 'the Tsuyaku page';
-    const code = document.createElement('code');
-    code.textContent = 'install.bat';
-    err.append(link, ' and run ', code, ' (already installed? run ');
-    const cmd = document.createElement('code');
-    cmd.textContent = 'uv run tsuyaku firefox';
-    err.append(cmd, ' in its folder), then turn Tsuyaku on again.');
+    err.append('Tsuyaku’s program isn’t set up on this PC yet. Get it from ', installLink(), ' and run ',
+      code('install.bat'), ' (already installed? run ', code('uv run tsuyaku firefox'),
+      ' in its folder), then turn Tsuyaku on again.');
+  } else if (s.didNotStart) {
+    // Firefox knows the program, but it isn't where it was registered (or it failed at once).
+    err.append('Firefox couldn’t start Tsuyaku’s program. If you moved or deleted the Tsuyaku folder, run ',
+      code('install.bat'), ' in the folder where it is now (or get it again from ', installLink(), '). Otherwise ',
+      code('tsuyaku.log'), ' in Tsuyaku’s logs folder says why. Firefox said: ', s.error);
   } else if (s.error) {
     err.textContent = s.error;
   } else if (h && h.setupError) {
@@ -155,3 +152,17 @@ tsyPrefs().then((loaded) => {
   });
   showTone(prefs.tone);
 });
+
+function code(text) {
+  const el = document.createElement('code');
+  el.textContent = text;
+  return el;
+}
+
+function installLink() {
+  const link = document.createElement('a');
+  link.href = `${browser.runtime.getManifest().homepage_url}#install`;
+  link.target = '_blank';
+  link.textContent = 'the Tsuyaku page';
+  return link;
+}

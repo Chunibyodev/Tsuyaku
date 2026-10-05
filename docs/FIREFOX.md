@@ -20,7 +20,7 @@ cloud model for the message box.
 1. **Install the Tsuyaku program** as described in the [README](../README.md#install)
    (`install.bat`). The installer also connects Firefox to it; `uv run tsuyaku firefox` in the
    Tsuyaku folder does that again if needed.
-2. **Add the add-on to Firefox (version 140 or newer):** download `tsuyaku-firefox-<version>.xpi`
+2. **Add the add-on to Firefox (version 142 or newer):** download `tsuyaku-firefox-<version>.xpi`
    from the [latest release](https://github.com/Chunibyodev/tsuyaku/releases/latest), drag it onto
    a Firefox window and click **Add**. Releases are signed by Mozilla, so release Firefox installs
    them like any add-on.
@@ -81,8 +81,11 @@ README for which model to pick.
 
 ## Troubleshooting
 
-* **"Firefox can't find Tsuyaku on this PC"**: run `uv run tsuyaku firefox` (or `update.bat`) in
-  the Tsuyaku folder. `tsuyaku doctor` then shows `Firefox extension: connected`.
+* **"Tsuyaku's program isn't set up on this PC"**: run `install.bat` (or `uv run tsuyaku firefox`)
+  in the Tsuyaku folder. `tsuyaku doctor` then shows `Firefox extension: connected`.
+* **"Firefox couldn't start Tsuyaku's program"**: Firefox still points at a Tsuyaku folder that was
+  moved or deleted. Run `install.bat` in the folder where Tsuyaku is now; it rebuilds the folder's
+  Python environment and points Firefox at it.
 * **A video went silent after the extension was reloaded or updated**: reload the YouTube tab.
   The sound runs through the extension's audio tap, which belonged to the old version.
 * **"Click the video once so Tsuyaku can hear it"**: Firefox lets a page use sound once you have

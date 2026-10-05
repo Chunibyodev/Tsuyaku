@@ -20,6 +20,7 @@ const state = {
   epoch: 0, // bumps every time Tsuyaku is switched on: pages send their context again
   error: '', // why it stopped or could not start
   notInstalled: false, // Firefox could not find the native host
+  didNotStart: false, // Firefox found it, but it ended before saying anything (folder moved or deleted?)
   host: null, // the host's latest status: models, downloads, settings
 };
 let host = null;
@@ -29,7 +30,7 @@ const ports = new Map(); // pid -> {port, kind, tab}
 // ------------------------------------------------------------------ on / off
 function powerOn() {
   if (host) return;
-  Object.assign(state, { power: 'starting', error: '', notInstalled: false, host: null });
+  Object.assign(state, { power: 'starting', error: '', notInstalled: false, didNotStart: false, host: null });
   state.epoch += 1;
   try {
     host = browser.runtime.connectNative(HOST);
@@ -42,7 +43,11 @@ function powerOn() {
     if (p !== host) return;
     host = null;
     const err = p.error ? p.error.message : '';
-    stopped(state.power === 'off' ? '' : (err || 'Tsuyaku stopped unexpectedly (see tsuyaku-host.log in the Tsuyaku logs folder).'));
+    if (state.power === 'starting') { // not a word from the program: it never really started
+      stopped(err || 'Tsuyaku’s program ended right after starting.', true);
+      return;
+    }
+    stopped(state.power === 'off' ? '' : (err || 'Tsuyaku stopped unexpectedly (see tsuyaku.log in Tsuyaku’s logs folder).'));
   });
   changed();
 }
@@ -54,8 +59,9 @@ function powerOff() {
   if (h) h.disconnect(); // the host sees its input close, stops the models and exits
 }
 
-function stopped(error) {
-  Object.assign(state, { power: 'off', host: null, error, notInstalled: /No such native application/i.test(error) });
+function stopped(error, didNotStart = false) {
+  const notInstalled = /No such native application/i.test(error);
+  Object.assign(state, { power: 'off', host: null, error, notInstalled, didNotStart: didNotStart && !notInstalled });
   changed();
 }
 
@@ -83,7 +89,7 @@ function onHostMessage(msg) {
 // ------------------------------------------------------------------ pages and popup
 function statusMessage() {
   return { type: 'status', status: { power: state.power, epoch: state.epoch, error: state.error,
-    notInstalled: state.notInstalled, host: state.host } };
+    notInstalled: state.notInstalled, didNotStart: state.didNotStart, host: state.host } };
 }
 
 function changed() {

@@ -2,6 +2,15 @@
 
 All notable changes are listed here. Versions follow [Semantic Versioning](https://semver.org/).
 
+## 1.0.1 — 2026-10-05
+
+* When Firefox can't start Tsuyaku's program because its folder was moved or deleted, the popup
+  now says so and what to do, instead of "An unexpected error occurred".
+* `install.bat` notices a moved Tsuyaku folder and rebuilds its Python environment, warns when
+  Tsuyaku is in the Downloads folder, and asks you to unzip first when started from inside the zip.
+* The README says what to keep after installing (the Tsuyaku folder) and how to move or update it.
+* Needs Firefox 142 or newer.
+
 ## 1.0.0 — 2026-10-05
 
 First public release.
